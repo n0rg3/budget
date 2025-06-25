@@ -1,7 +1,5 @@
-// src/App.tsx
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from "react-router-dom";
+import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import CategoriesView from "./pages/CategoriesView";
-import PieChartView from "./pages/PieChartView";
 import ExpensesView from "./pages/ExpensesView";
 import { useState } from "react";
 import { FaListUl, FaChartPie, FaTags } from "react-icons/fa";
@@ -11,28 +9,26 @@ import { SelectedMonthProvider } from "./context/SelectedMonthContext";
 import "./App.css";
 
 export default function App() {
-const [categories, setCategories] = useState<Category[]>([
-  { name: "Продукты", icon: "FaShoppingCart" },
-  { name: "Транспорт", icon: "FaBus" },
-]);
-
-const [purchases, setPurchases] = useState<Purchase[]>([]);
-
-const addCategory = (name: string, icon: string) => {
-  setCategories((prev) => [...prev, { name, icon }]);
-};
-
-const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
-  setPurchases((prev) => [
-    ...prev,
-    { ...purchase, id: Date.now(), date: new Date().toISOString() },
+  const [categories, setCategories] = useState<Category[]>([
+    { name: "Продукты", icon: "FaShoppingCart" },
+    { name: "Транспорт", icon: "FaBus" },
   ]);
-};
 
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+
+  const addCategory = (name: string, icon: string) => {
+    setCategories((prev) => [...prev, { name, icon }]);
+  };
+
+  const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
+    setPurchases((prev) => [
+      ...prev,
+      { ...purchase, id: Date.now(), date: new Date().toISOString() },
+    ]);
+  };
 
   return (
-  
-  <SelectedMonthProvider>
+    <SelectedMonthProvider>
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Navigate to="/categories" replace />} />
@@ -47,7 +43,6 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
               />
             }
           />
-          <Route path="/chart" element={<PieChartView purchases={purchases} />} />
           <Route path="/expenses" element={<ExpensesView purchases={purchases} />} />
         </Routes>
 
@@ -66,6 +61,6 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
           </NavLink>
         </nav>
       </div>
-  </SelectedMonthProvider>
+    </SelectedMonthProvider>
   );
 }
