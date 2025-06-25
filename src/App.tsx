@@ -7,12 +7,6 @@ import { useState } from "react";
 import { FaListUl, FaChartPie, FaTags } from "react-icons/fa";
 import type { Category, Purchase } from "./types";
 import { SelectedMonthProvider } from "./context/SelectedMonthContext";
-import { HashRouter } from "react-router-dom";
-
-<HashRouter>
-  <App />
-</HashRouter>
-
 
 import "./App.css";
 
@@ -39,7 +33,6 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
   return (
   
   <SelectedMonthProvider>
-    <Router>
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Navigate to="/categories" replace />} />
@@ -73,7 +66,6 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
           </NavLink>
         </nav>
       </div>
-    </Router>
   </SelectedMonthProvider>
   );
 }
