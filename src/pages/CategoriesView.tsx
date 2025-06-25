@@ -65,6 +65,9 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
     setSelectedCategoryIndex(null);
   };
 
+  console.log("CategoriesView загружен");
+
+
   return (
     <div style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
       {/* Верхняя панель */}
