@@ -7,6 +7,11 @@ import { useState } from "react";
 import { FaListUl, FaChartPie, FaTags } from "react-icons/fa";
 import type { Category, Purchase } from "./types";
 import { SelectedMonthProvider } from "./context/SelectedMonthContext";
+import { HashRouter } from "react-router-dom";
+
+<HashRouter>
+  <App />
+</HashRouter>
 
 
 import "./App.css";
