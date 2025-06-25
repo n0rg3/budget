@@ -13,8 +13,8 @@
       "type": "image/png"
     }
   ],
-"start_url": "/budget/index.html",
-"scope": "/budget",
+"start_url": "/budget/",
+"scope": "/budget/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff"
