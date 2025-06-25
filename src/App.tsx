@@ -6,6 +6,8 @@ import ExpensesView from "./pages/ExpensesView";
 import { useState } from "react";
 import { FaListUl, FaChartPie, FaTags } from "react-icons/fa";
 import type { Category, Purchase } from "./types";
+import { SelectedMonthProvider } from "./context/SelectedMonthContext";
+
 
 import "./App.css";
 
@@ -30,6 +32,8 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
 
 
   return (
+  
+  <SelectedMonthProvider>
     <Router>
       <div className="app-container">
         <Routes>
@@ -65,5 +69,6 @@ const addPurchase = (purchase: Omit<Purchase, "id" | "date">) => {
         </nav>
       </div>
     </Router>
+  </SelectedMonthProvider>
   );
 }

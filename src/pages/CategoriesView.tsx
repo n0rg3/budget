@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import * as FaIcons from "react-icons/fa";
 import AddCategoryModal from "../components/AddCategoryModal";
 import { getLast12Months } from "../hooks/useMonths";
+import { useSelectedMonth } from "../context/SelectedMonthContext";
+
 
 import type { Category, Purchase } from "../types";
 
@@ -24,8 +26,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
   const [purchaseName, setPurchaseName] = useState("");
   const [purchaseAmount, setPurchaseAmount] = useState("");
 
-  const months = getLast12Months();
-  const [selectedMonth, setSelectedMonth] = useState(months[0]);
+  const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
   const handleAddPurchase = () => {
     if (selectedCategoryIndex === null || !purchaseName || !purchaseAmount) return;
