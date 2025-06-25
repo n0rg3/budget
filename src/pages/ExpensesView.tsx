@@ -1,5 +1,4 @@
 import React from "react";
-import { getLast12Months } from "../hooks/useMonths";
 import type { Purchase } from "../types";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
 
@@ -38,8 +37,10 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
         height: "100vh",
         overflow: "hidden",
         position: "relative",
-        width: "100%", // Убедимся, что контейнер растягивается
-        boxSizing: "border-box", // Применяем глобально
+        width: "100vw", // Используем 100vw для максимальной ширины
+        margin: 0, // Убираем возможные отступы
+        padding: 0, // Убираем возможные внутренние отступы
+        boxSizing: "border-box",
       }}
     >
       {/* Зафиксированная верхняя панель */}
@@ -51,19 +52,19 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
           right: 0,
           zIndex: 1000,
           background: "white",
-          padding: 12,
+          padding: "12px 16px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
           boxSizing: "border-box",
-          width: "100%", // Убедимся, что панель растягивается
+          width: "100vw", // Полная ширина окна
         }}
       >
         <select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          style={{ fontSize: 16, padding: "6px 8px", width: 180 }}
+          style={{ fontSize: 16, padding: "6px 8px", width: 150 }}
         >
           {months.map((month, idx) => (
             <option key={idx} value={month}>
@@ -80,9 +81,11 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
       <div
         style={{
           marginTop: 72,
-          height: "calc(100vh - 72px)", // Учитываем высоту верхней панели
+          height: "calc(100vh - 72px)", // Учитываем высоту панели
           overflowY: "auto",
-          width: "100%", // Растягиваем на всю ширину
+          width: "100vw", // Полная ширина окна
+          margin: 0,
+          padding: 0,
           boxSizing: "border-box",
         }}
       >
@@ -97,8 +100,9 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
             listStyle: "none",
             padding: 0,
             margin: 0,
-            width: "100%", // Убедимся, что список растягивается
+            width: "100%", // Растягиваем ul
             boxSizing: "border-box",
+            minWidth: "100%", // Убедимся, что нет сжатия
           }}
         >
           {filteredPurchases.map((purchase) => (
@@ -111,8 +115,9 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
                 borderBottom: "1px solid #ccc",
                 alignItems: "center",
                 fontSize: 14,
-                width: "100%", // Растягиваем элемент списка
+                width: "100%", // Растягиваем li
                 boxSizing: "border-box",
+                minWidth: "100%", // Убедимся, что нет сжатия
               }}
             >
               <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>

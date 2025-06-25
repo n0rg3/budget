@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import * as FaIcons from "react-icons/fa";
 import AddCategoryModal from "../components/AddCategoryModal";
-import { getLast12Months } from "../hooks/useMonths";
+import { useSelectedMonth } from "../context/SelectedMonthContext"; // ✅ добавь эту строку
 import type { Category, Purchase } from "../types";
 import { evaluate } from "mathjs";
 
@@ -33,8 +33,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
   const [purchaseName, setPurchaseName] = useState("");
   const [purchaseAmount, setPurchaseAmount] = useState("");
 
-  const months = getLast12Months();
-  const [selectedMonth, setSelectedMonth] = useState(months[0]);
+  const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
   const totalSum = purchases
     .filter((p) => isInSelectedMonth(p.date, selectedMonth))
@@ -192,7 +191,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
       >
         <input
           type="text"
-          placeholder="Название покупки"
+          placeholder="Название покупки (необязательно)"
           value={purchaseName}
           onChange={(e) => setPurchaseName(e.target.value)}
           style={{
