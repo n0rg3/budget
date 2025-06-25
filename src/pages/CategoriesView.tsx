@@ -103,7 +103,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
           marginTop: 72,
           marginBottom: 180,
           padding: "0 16px",
-          height: "calc(100vh - 252px)",
+          height: "calc(450vh - 252px)",
           overflowY: "auto",
           display: "flex",
           flexWrap: "wrap",
