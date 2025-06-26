@@ -194,7 +194,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
       >
         <input
           type="text"
-          placeholder="Название покупки (необязательно)"
+          placeholder="Название покупки"
           value={purchaseName}
           onChange={(e) => setPurchaseName(e.target.value)}
           style={{
@@ -222,7 +222,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
           onClick={handleAddPurchase}
           disabled={isButtonDisabled}
           style={{
-            width: "100%",
+            width: "150px",
             padding: "10px 16px",
             background: "#007bff",
             color: "white",

@@ -1,6 +1,7 @@
 import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import CategoriesView from "./pages/CategoriesView";
 import ExpensesView from "./pages/ExpensesView";
+import PieChartView from "./pages/PieChartView";
 import { useState } from "react";
 import { FaListUl, FaChartPie, FaTags } from "react-icons/fa";
 import type { Category, Purchase } from "./types";
@@ -43,6 +44,7 @@ export default function App() {
               />
             }
           />
+          <Route path="/chart" element={<PieChartView purchases={purchases} />} />
           <Route path="/expenses" element={<ExpensesView purchases={purchases} />} />
         </Routes>
 
