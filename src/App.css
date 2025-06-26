@@ -21,6 +21,8 @@ body {
   border-top: 1px solid #ccc;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
   z-index: 10;
+    /* Добавляем безопасную зону снизу для iPhone с Face ID */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
 }
 
 .bottom-nav a {
@@ -34,8 +36,6 @@ body {
   align-items: center;
   padding-top: 4px;
   transition: color 0.2s;
-    /* Добавляем безопасную зону снизу для iPhone с Face ID */
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
 }
 
 .bottom-nav a svg {

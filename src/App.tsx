@@ -11,8 +11,8 @@ import "./App.css";
 
 export default function App() {
   const [categories, setCategories] = useState<Category[]>([
-    { name: "Продукты", icon: "FaShoppingCart" },
-    { name: "Транспорт", icon: "FaBus" },
+    { name: "Продукты", icon: "ShoppingCart" },
+    { name: "Транспорт", icon: "Car" },
   ]);
 
   const [purchases, setPurchases] = useState<Purchase[]>([]);

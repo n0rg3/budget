@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import * as FaIcons from "react-icons/fa";
+// import * as LucideIcons from "lucide-react";
 import AddCategoryModal from "../components/AddCategoryModal";
-import { useSelectedMonth } from "../context/SelectedMonthContext"; // ✅ добавь эту строку
+import EditCategoryModal from "../components/EditCategoryModal";
+import { useSelectedMonth } from "../context/SelectedMonthContext";
 import type { Category, Purchase } from "../types";
 import { evaluate } from "mathjs";
+import { iconMap } from "../constants/iconOptions";
+import { PlusIcon } from "lucide-react";
 
-interface CategoriesViewProps {
-  categories: Category[];
-  purchases: Purchase[];
-  addCategory: (name: string, icon: string) => void;
-  addPurchase: (purchase: Omit<Purchase, "id" | "date">) => void;
-}
 
 function isValidExpression(expr: string): boolean {
   try {
@@ -27,11 +24,27 @@ function isInSelectedMonth(dateStr: string, selectedMonth: string) {
   return formatter.format(date) === selectedMonth;
 }
 
-function CategoriesView({ categories, purchases, addCategory, addPurchase }: CategoriesViewProps) {
+interface CategoriesViewProps {
+  categories: Category[];
+  purchases: Purchase[];
+  addCategory: (name: string, icon: string) => void;
+  addPurchase: (purchase: Omit<Purchase, "id" | "date">) => void;
+}
+
+function CategoriesView({
+  categories: initialCategories,
+  purchases,
+  addCategory,
+  addPurchase,
+}: CategoriesViewProps) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState<number | null>(null);
   const [purchaseName, setPurchaseName] = useState("");
   const [purchaseAmount, setPurchaseAmount] = useState("");
+
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
@@ -55,7 +68,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
     }
 
     addPurchase({
-      name: purchaseName || "", // пустая строка, если не введено
+      name: purchaseName || "",
       amount,
       category: categories[selectedCategoryIndex].name,
     });
@@ -65,8 +78,28 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
     setSelectedCategoryIndex(null);
   };
 
-  console.log("CategoriesView загружен");
+  const handleLongPress = (cat: Category) => {
+    setEditingCategory(cat);
+    setShowEditModal(true);
+  };
 
+  const handleUpdateCategory = (updated: Category) => {
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat.name === editingCategory?.name ? updated : cat
+      )
+    );
+    setEditingCategory(null);
+    setShowEditModal(false);
+  };
+
+  const handleDeleteCategory = (categoryToDelete: Category) => {
+    setCategories((prev) =>
+      prev.filter((cat) => cat.name !== categoryToDelete.name)
+    );
+    setEditingCategory(null);
+    setShowEditModal(false);
+  };
 
   return (
     <div style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
@@ -115,7 +148,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
         }}
       >
         {categories.map((cat, i) => {
-          const Icon = FaIcons[cat.icon as keyof typeof FaIcons];
+          const Icon = iconMap[cat.icon];
           const isSelected = i === selectedCategoryIndex;
 
           const sumByCategory = purchases
@@ -127,6 +160,10 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
             <div
               key={i}
               onClick={() => setSelectedCategoryIndex(i)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleLongPress(cat);
+              }}
               style={{
                 cursor: "pointer",
                 textAlign: "center",
@@ -170,7 +207,7 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
             userSelect: "none",
           }}
         >
-          <FaIcons.FaPlus size={28} />
+          <PlusIcon size={28} />
           <div style={{ fontSize: 14, marginTop: 4 }}>Добавить</div>
         </div>
       </div>
@@ -237,14 +274,28 @@ function CategoriesView({ categories, purchases, addCategory, addPurchase }: Cat
         </button>
       </div>
 
-      {/* Модалка */}
+      {/* Модалки */}
       {showAddModal && (
         <AddCategoryModal
           onClose={() => setShowAddModal(false)}
           onAdd={(name, icon) => {
+            setCategories((prev) => [...prev, { name, icon }]);
             addCategory(name, icon);
             setShowAddModal(false);
           }}
+        />
+      )}
+
+      {showEditModal && editingCategory && (
+        <EditCategoryModal
+          category={editingCategory}
+          purchases={purchases}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingCategory(null);
+          }}
+          onSave={handleUpdateCategory}
+          onDelete={() => handleDeleteCategory(editingCategory)}
         />
       )}
     </div>
