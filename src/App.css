@@ -20,10 +20,11 @@ body {
   align-items: center;
   border-top: 1px solid #ccc;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-    /* Добавляем безопасную зону снизу для iPhone с Face ID */
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  padding-bottom: env(safe-area-inset-bottom, 10px);
+  z-index: 9999;
 }
+
+
 
 .bottom-nav a {
   flex: 1;

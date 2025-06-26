@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import * as LucideIcons from "lucide-react";
 import AddCategoryModal from "../components/AddCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
@@ -7,7 +6,6 @@ import type { Category, Purchase } from "../types";
 import { evaluate } from "mathjs";
 import { iconMap } from "../constants/iconOptions";
 import { PlusIcon } from "lucide-react";
-
 
 function isValidExpression(expr: string): boolean {
   try {
@@ -20,7 +18,10 @@ function isValidExpression(expr: string): boolean {
 
 function isInSelectedMonth(dateStr: string, selectedMonth: string) {
   const date = new Date(dateStr);
-  const formatter = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" });
+  const formatter = new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+    year: "numeric",
+  });
   return formatter.format(date) === selectedMonth;
 }
 
@@ -42,7 +43,6 @@ function CategoriesView({
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState<number | null>(null);
   const [purchaseName, setPurchaseName] = useState("");
   const [purchaseAmount, setPurchaseAmount] = useState("");
-
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -53,9 +53,7 @@ function CategoriesView({
     .reduce((sum, p) => sum + p.amount, 0);
 
   const isButtonDisabled =
-    !purchaseAmount ||
-    selectedCategoryIndex === null ||
-    !isValidExpression(purchaseAmount);
+    !purchaseAmount || selectedCategoryIndex === null || !isValidExpression(purchaseAmount);
 
   const handleAddPurchase = () => {
     if (isButtonDisabled) return;
@@ -85,9 +83,7 @@ function CategoriesView({
 
   const handleUpdateCategory = (updated: Category) => {
     setCategories((prev) =>
-      prev.map((cat) =>
-        cat.name === editingCategory?.name ? updated : cat
-      )
+      prev.map((cat) => (cat.name === editingCategory?.name ? updated : cat))
     );
     setEditingCategory(null);
     setShowEditModal(false);
@@ -102,7 +98,14 @@ function CategoriesView({
   };
 
   return (
-    <div style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
+    <div
+      style={{
+        height: "100vh",
+        position: "relative",
+        overflow: "hidden",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+      }}
+    >
       {/* Верхняя панель */}
       <div
         style={{
@@ -125,7 +128,9 @@ function CategoriesView({
           style={{ fontSize: 16, padding: "6px 8px", width: 150 }}
         >
           {months.map((month, idx) => (
-            <option key={idx} value={month}>{month}</option>
+            <option key={idx} value={month}>
+              {month}
+            </option>
           ))}
         </select>
         <div style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -145,6 +150,8 @@ function CategoriesView({
           flexWrap: "wrap",
           gap: 12,
           alignContent: "flex-start",
+          WebkitUserSelect: "none",
+          userSelect: "none",
         }}
       >
         {categories.map((cat, i) => {
@@ -160,6 +167,10 @@ function CategoriesView({
             <div
               key={i}
               onClick={() => setSelectedCategoryIndex(i)}
+              onTouchStart={(e) => {
+                const timeout = setTimeout(() => handleLongPress(cat), 500);
+                e.currentTarget.ontouchend = () => clearTimeout(timeout);
+              }}
               onContextMenu={(e) => {
                 e.preventDefault();
                 handleLongPress(cat);
@@ -216,11 +227,12 @@ function CategoriesView({
       <div
         style={{
           position: "fixed",
-          bottom: 50,
+          bottom: 60,
           left: 0,
           right: 0,
           backgroundColor: "white",
           padding: "10px 20px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
           boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
           display: "flex",
           flexDirection: "column",
