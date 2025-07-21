@@ -81,12 +81,16 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
       <div
         style={{
           marginTop: 72,
-          height: "calc(100vh - 72px)", // Учитываем высоту панели
-          overflowY: "auto",
-          width: "100vw", // Полная ширина окна
-          margin: 0,
+          marginBottom: 180,
           padding: "0 16px",
-          boxSizing: "border-box",
+          height: "calc(450vh - 252px)",
+          overflowY: "auto",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 12,
+          alignContent: "flex-start",
+          WebkitUserSelect: "none",
+          userSelect: "none",
         }}
       >
         {filteredPurchases.length === 0 && (
