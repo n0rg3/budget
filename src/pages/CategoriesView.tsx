@@ -113,13 +113,15 @@ function CategoriesView({
           top: 0,
           left: 0,
           right: 0,
-          background: "white",
           zIndex: 1000,
+          background: "white",
           padding: "12px 16px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          boxSizing: "border-box",
+          width: "100vw", // Полная ширина окна
         }}
       >
         <select

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "plasmic": "plasmic",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -11,6 +12,14 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@ant-design/pro-components": "^2.6.4",
+    "@plasmicapp/react-web": "^0.2.393",
+    "@plasmicpkgs/antd5": "^0.0.295",
+    "@plasmicpkgs/plasmic-basic-components": "^0.0.249",
+    "@plasmicpkgs/plasmic-nav": "^0.0.192",
+    "@plasmicpkgs/plasmic-rich-components": "^1.0.218",
+    "@plasmicpkgs/plasmic-tabs": "^0.0.63",
     "lucide-react": "^0.523.0",
     "mathjs": "^14.5.2",
     "react": "^19.1.0",
@@ -22,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@plasmicapp/cli": "^0.1.340",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
@@ -34,5 +44,18 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n0rg3/budget.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/n0rg3/budget/issues"
+  },
+  "homepage": "https://github.com/n0rg3/budget#readme"
 }

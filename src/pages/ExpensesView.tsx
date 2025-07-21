@@ -85,7 +85,7 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
           overflowY: "auto",
           width: "100vw", // Полная ширина окна
           margin: 0,
-          padding: 0,
+          padding: "0 16px",
           boxSizing: "border-box",
         }}
       >
