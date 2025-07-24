@@ -121,7 +121,7 @@ function CategoriesView({
           alignItems: "center",
           boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
           boxSizing: "border-box",
-          width: "100vw", // Полная ширина окна
+          width: "100vw",
         }}
       >
         <select
@@ -140,18 +140,17 @@ function CategoriesView({
         </div>
       </div>
 
-      {/* Категории */}
+      {/* Сетка категорий */}
       <div
         style={{
           marginTop: 72,
           marginBottom: 180,
           padding: "0 16px",
-          height: "calc(450vh - 252px)",
-          overflowY: "auto",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 12,
-          alignContent: "flex-start",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+          gap: 16,
+          justifyItems: "center",
+          alignContent: "start",
           WebkitUserSelect: "none",
           userSelect: "none",
         }}
@@ -178,24 +177,35 @@ function CategoriesView({
                 handleLongPress(cat);
               }}
               style={{
-                cursor: "pointer",
+                width: 90,
                 textAlign: "center",
-                borderRadius: 12,
-                padding: 10,
-                border: isSelected ? "1px solid blue" : "1px solid #ccc",
-                background: isSelected ? "#e0f0ff" : "#f9f9f9",
-                width: 80,
-                height: 80,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
+                cursor: "pointer",
                 userSelect: "none",
               }}
             >
-              <div style={{ fontSize: 14, fontWeight: "bold" }}>{cat.name}</div>
-              {Icon && <Icon size={28} />}
-              <div style={{ fontSize: 14, marginTop: 6 }}>{sumByCategory} RSD</div>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                {cat.name}
+              </div>
+              <div
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                  background: isSelected ? "#e0f0ff" : "#f9f9f9",
+                  border: isSelected ? "2px solid #007bff" : "1px solid #ccc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 6px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "0.2s",
+                }}
+              >
+                {Icon && <Icon size={28} />}
+              </div>
+              <div style={{ fontSize: 13, color: "#333" }}>
+                {sumByCategory} RSD
+              </div>
             </div>
           );
         })}
@@ -204,24 +214,31 @@ function CategoriesView({
         <div
           onClick={() => setShowAddModal(true)}
           style={{
-            cursor: "pointer",
+            width: 90,
             textAlign: "center",
-            borderRadius: 12,
-            padding: 10,
-            border: "1px solid #ccc",
-            background: "#f9f9f9",
-            width: 80,
-            height: 80,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#666",
+            cursor: "pointer",
             userSelect: "none",
           }}
         >
-          <PlusIcon size={28} />
-          <div style={{ fontSize: 14, marginTop: 4 }}>Добавить</div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+            Добавить
+          </div>
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: "50%",
+              background: "#f9f9f9",
+              border: "1px solid #ccc",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 6px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+            }}
+          >
+            <PlusIcon size={28} />
+          </div>
         </div>
       </div>
 
