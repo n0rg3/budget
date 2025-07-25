@@ -48,18 +48,22 @@ function CategoriesView({
   const [showEditModal, setShowEditModal] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
 
-  useEffect(() => {
+useEffect(() => {
   const viewport = window.visualViewport;
   if (!viewport) return;
 
-  const handleResize = () => {
-    const keyboardHeight = window.innerHeight - viewport.height - viewport.offsetTop;
-    setKeyboardOffset(keyboardHeight);
+  const fixBottomNav = () => {
+    const nav = document.querySelector('.bottom-nav') as HTMLElement;
+    if (!nav) return;
+
+    // При открытой клавиатуре viewport.height уменьшается → компенсируем
+    nav.style.transform = 'translateY(0)'; // всегда 0, игнорируем viewport
   };
 
-  viewport.addEventListener("resize", handleResize);
-  return () => viewport.removeEventListener("resize", handleResize);
+  viewport.addEventListener('resize', fixBottomNav);
+  return () => viewport.removeEventListener('resize', fixBottomNav);
 }, []);
+
 
 
 

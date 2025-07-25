@@ -9,23 +9,23 @@ html, body {
 }
 
 .app-container {
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 10px)); /* запас снизу под фикс. нижнюю панель */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* запас снизу под фикс. нижнюю панель */
 }
 
 .bottom-nav {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
-  min-height: 60px;          /* минимальная высота панели */
+  height: 60px; /* фиксированная высота */
+  bottom: 0; /* зафиксировать */
   background: #fff;
   display: flex;
   justify-content: space-around;
   align-items: center;
   border-top: 1px solid #ccc;
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
-  padding-bottom: env(safe-area-inset-bottom, 10px);
   z-index: 9999;
+  transform: translateY(0); /* базовое положение */
 }
 
 .bottom-nav a {
