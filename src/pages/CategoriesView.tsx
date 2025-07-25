@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddCategoryModal from "../components/AddCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
@@ -6,6 +6,7 @@ import type { Category, Purchase } from "../types";
 import { evaluate } from "mathjs";
 import { iconMap } from "../constants/iconOptions";
 import { PlusIcon } from "lucide-react";
+
 
 function isValidExpression(expr: string): boolean {
   try {
@@ -45,6 +46,22 @@ function CategoriesView({
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  useEffect(() => {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+
+  const handleResize = () => {
+    const keyboardHeight = window.innerHeight - viewport.height - viewport.offsetTop;
+    setKeyboardOffset(keyboardHeight);
+  };
+
+  viewport.addEventListener("resize", handleResize);
+  return () => viewport.removeEventListener("resize", handleResize);
+}, []);
+
+
 
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
