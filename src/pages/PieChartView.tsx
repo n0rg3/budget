@@ -1,4 +1,4 @@
-// src/pages/PieChartView.tsx
+import React from "react";
 import {
   PieChart,
   Pie,
@@ -31,10 +31,7 @@ function isInSelectedMonth(dateStr: string, selectedMonth: string) {
 function PieChartView({ purchases }: PieChartViewProps) {
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
-  const filtered = purchases.filter((p) =>
-    isInSelectedMonth(p.date, selectedMonth)
-  );
-
+  const filtered = purchases.filter((p) => isInSelectedMonth(p.date, selectedMonth));
   const total = filtered.reduce((sum, p) => sum + p.amount, 0);
 
   const categoryMap: Record<string, number> = {};
@@ -49,24 +46,35 @@ function PieChartView({ purchases }: PieChartViewProps) {
       percent: ((value / total) * 100).toFixed(1),
       color: generateColor(index),
     }))
-    .sort((a, b) => b.value - a.value); // ⬅️ Сортировка по убыванию суммы
+    .sort((a, b) => b.value - a.value);
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        width: "100%",
+        background: "#fff",
+        overflow: "hidden", // убираем скролл всего экрана
+      }}
+    >
       {/* Верхняя панель */}
       <div
         style={{
+          flexShrink: 0,
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
+          height: 80,
           background: "white",
-          zIndex: 1000,
           padding: "12px 16px",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          alignItems: "flex-end",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          zIndex: 100,
         }}
       >
         <select
@@ -75,7 +83,9 @@ function PieChartView({ purchases }: PieChartViewProps) {
           style={{ fontSize: 16, padding: "6px 8px", width: 150 }}
         >
           {months.map((month, idx) => (
-            <option key={idx} value={month}>{month}</option>
+            <option key={idx} value={month}>
+              {month}
+            </option>
           ))}
         </select>
         <div style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -83,48 +93,58 @@ function PieChartView({ purchases }: PieChartViewProps) {
         </div>
       </div>
 
-      {/* Содержимое под панелью */}
-      <div style={{ marginTop: 72, flexGrow: 1, overflowY: "auto", padding: "0 16px", paddingBottom: 80 }}>
+      {/* Прокручиваемая зона */}
+      <div
+        style={{
+          flex: 1,
+          marginTop: 110,
+          padding: "16px",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {data.length === 0 ? (
-          <p style={{ marginTop: 20 }}>Нет данных для отображения</p>
+          <p style={{ marginTop: 20, textAlign: "center" }}>Нет данных для отображения</p>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={270}>
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="55%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  dataKey="value"
-                  paddingAngle={2}
-                  label={({ percent }) => {
-                  if (percent === undefined || percent === null) return "";
-                  return `${(percent * 1).toFixed(0)}%`;
-                }}
-                >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                  <Label
-                    value="Расходы"
-                    position="center"
-                    fill="#333"
-                    style={{ fontSize: 16 }}
-                  />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            {/* Диаграмма */}
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    dataKey="value"
+                    paddingAngle={2}
+                    label={({ percent }) =>
+                      percent ? `${(percent * 100).toFixed(0)}%` : ""
+                    }
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                    <Label
+                      value="Расходы"
+                      position="center"
+                      fill="#333"
+                      style={{ fontSize: 16 }}
+                    />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
             {/* Легенда */}
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 6,
+                gap: 10,
                 justifyContent: "center",
-                marginTop: 20,
+                marginTop: 24,
               }}
             >
               {data.map((entry, index) => (
@@ -135,21 +155,20 @@ function PieChartView({ purchases }: PieChartViewProps) {
                     flexDirection: "column",
                     alignItems: "center",
                     width: 80,
+                    textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 14, fontWeight: 500, textAlign: "center", marginBottom: 8 }}>
-                    {entry.name}
-                  </div>
                   <div
                     style={{
-                      width: 30,
-                      height: 30,
+                      width: 28,
+                      height: 28,
                       borderRadius: "50%",
                       backgroundColor: entry.color,
                       marginBottom: 6,
                     }}
                   />
-                  <div style={{ fontSize: 12, color: "black" }}>{entry.percent}%</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{entry.name}</div>
+                  <div style={{ fontSize: 12, color: "#000" }}>{entry.percent}%</div>
                   <div style={{ fontSize: 12, color: "#777" }}>{entry.value.toFixed(0)} RSD</div>
                 </div>
               ))}

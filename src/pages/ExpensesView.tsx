@@ -34,31 +34,30 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
   return (
     <div
       style={{
+        display: "flex",
+        flexDirection: "column",
         height: "100vh",
-        overflow: "hidden",
-        position: "relative",
-        width: "100vw", // Используем 100vw для максимальной ширины
-        margin: 0, // Убираем возможные отступы
-        padding: 0, // Убираем возможные внутренние отступы
-        boxSizing: "border-box",
+        width: "100%",
+        background: "#fff",
+        overflow: "hidden", // убираем общий скролл
       }}
     >
-      {/* Зафиксированная верхняя панель */}
+      {/* Верхняя панель */}
       <div
         style={{
+          flexShrink: 0,
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
+          height: 80,
           background: "white",
           padding: "12px 16px",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          boxSizing: "border-box",
-          width: "100vw", // Полная ширина окна
+          alignItems: "flex-end",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          zIndex: 100,
         }}
       >
         <select
@@ -77,24 +76,19 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
         </div>
       </div>
 
-      {/* Прокручиваемая часть — список покупок */}
+      {/* Прокручиваемый список покупок */}
       <div
         style={{
-          marginTop: 72,
-          marginBottom: 180,
-          padding: "0 16px",
-          height: "calc(450vh - 252px)",
+          flex: 1,
+          marginTop: 110,
+          marginBottom: 0,
           overflowY: "auto",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 12,
-          alignContent: "flex-start",
-          WebkitUserSelect: "none",
-          userSelect: "none",
+          WebkitOverflowScrolling: "touch",
+          padding: "0 16px",
         }}
       >
         {filteredPurchases.length === 0 && (
-          <p style={{ marginTop: 16, padding: "0 16px", width: "100%" }}>
+          <p style={{ marginTop: 16, textAlign: "center" }}>
             Покупок за этот месяц нет
           </p>
         )}
@@ -104,9 +98,8 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
             listStyle: "none",
             padding: 0,
             margin: 0,
-            width: "100%", // Растягиваем ul
+            width: "100%",
             boxSizing: "border-box",
-            minWidth: "100%", // Убедимся, что нет сжатия
           }}
         >
           {filteredPurchases.map((purchase) => (
@@ -116,21 +109,27 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
                 display: "flex",
                 justifyContent: "space-between",
                 padding: "12px 16px",
-                borderBottom: "1px solid #ccc",
+                borderBottom: "1px solid #eee",
                 alignItems: "center",
                 fontSize: 14,
-                width: "100%", // Растягиваем li
-                boxSizing: "border-box",
-                minWidth: "100%", // Убедимся, что нет сжатия
               }}
             >
+              {/* Левая часть */}
               <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                <div style={{ fontWeight: "bold", color: "black" }}>{purchase.category}</div>
-                <div style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                <div style={{ fontWeight: 600 }}>{purchase.category}</div>
+                <div
+                  style={{
+                    textOverflow: "ellipsis",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    color: "#333",
+                  }}
+                >
                   {purchase.name}
                 </div>
               </div>
 
+              {/* Правая часть */}
               <div
                 style={{
                   textAlign: "right",
@@ -139,7 +138,7 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
                   whiteSpace: "nowrap",
                 }}
               >
-                <div style={{ fontWeight: "bold" }}>{purchase.amount.toFixed(0)} RSD</div>
+                <div style={{ fontWeight: 600 }}>{purchase.amount.toFixed(0)} RSD</div>
                 <div style={{ fontSize: 12, color: "#666" }}>
                   {formatDateTime(purchase.date)}
                 </div>
