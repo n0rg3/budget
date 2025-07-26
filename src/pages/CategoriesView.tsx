@@ -6,6 +6,8 @@ import type { Category, Purchase } from "../types";
 import { evaluate } from "mathjs";
 import { iconMap } from "../constants/iconOptions";
 import { PlusIcon } from "lucide-react";
+import CustomNumericKeyboard from "../components/CustomNumericKeyboard";
+
 
 
 function isValidExpression(expr: string): boolean {
@@ -64,6 +66,17 @@ useEffect(() => {
   return () => viewport.removeEventListener('resize', fixBottomNav);
 }, []);
 
+const [showKeyboard, setShowKeyboard] = useState(false);
+
+const handleKeyboardInput = (key: string) => {
+  if (key === "⌫") {
+    setPurchaseAmount((prev) => prev.slice(0, -1));
+  } else if (key === "Ввод") {
+    setShowKeyboard(false); // закрыть клавиатуру
+  } else {
+    setPurchaseAmount((prev) => prev + key);
+  }
+};
 
 
 
@@ -307,15 +320,16 @@ useEffect(() => {
       type="text"
       placeholder="Сумма"
       value={purchaseAmount}
-      onChange={(e) => setPurchaseAmount(e.target.value)}
+      readOnly
+      onFocus={() => setShowKeyboard(true)}
       style={{
         width: "300px",
         padding: 8,
         fontSize: 16,
         border: "1px solid #666",
         borderRadius: 6,
-      }}
-    />
+  }}
+/>
     <button
       onClick={handleAddPurchase}
       disabled={isButtonDisabled}
@@ -336,6 +350,9 @@ useEffect(() => {
   </div>
 )}
 
+{showKeyboard && (
+  <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
+)}
 
       {/* Модалки */}
       {showAddModal && (
