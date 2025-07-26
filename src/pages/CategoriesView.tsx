@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AddCategoryModal from "../components/AddCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
@@ -7,8 +7,7 @@ import { evaluate } from "mathjs";
 import { iconMap } from "../constants/iconOptions";
 import { PlusIcon } from "lucide-react";
 import CustomNumericKeyboard from "../components/CustomNumericKeyboard";
-
-
+import CustomAlphaKeyboard from "../components/CustomAlphaKeyboard";
 
 function isValidExpression(expr: string): boolean {
   try {
@@ -48,38 +47,10 @@ function CategoriesView({
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
-useEffect(() => {
-  const viewport = window.visualViewport;
-  if (!viewport) return;
-
-  const fixBottomNav = () => {
-    const nav = document.querySelector('.bottom-nav') as HTMLElement;
-    if (!nav) return;
-
-    // При открытой клавиатуре viewport.height уменьшается → компенсируем
-    nav.style.transform = 'translateY(0)'; // всегда 0, игнорируем viewport
-  };
-
-  viewport.addEventListener('resize', fixBottomNav);
-  return () => viewport.removeEventListener('resize', fixBottomNav);
-}, []);
-
-const [showKeyboard, setShowKeyboard] = useState(false);
-const KEYBOARD_HEIGHT = 240; // подогнать по реальной высоте клавиатуры
-
-const handleKeyboardInput = (key: string) => {
-  if (key === "⌫") {
-    setPurchaseAmount((prev) => prev.slice(0, -1));
-  } else if (key === "Ввод") {
-    setShowKeyboard(false); // закрыть клавиатуру
-  } else {
-    setPurchaseAmount((prev) => prev + key);
-  }
-};
-
-
+  const [showNumericKeyboard, setShowNumericKeyboard] = useState(false);
+  const [showAlphaKeyboard, setShowAlphaKeyboard] = useState(false);
+  const KEYBOARD_HEIGHT = 260;
 
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
@@ -89,6 +60,28 @@ const handleKeyboardInput = (key: string) => {
 
   const isButtonDisabled =
     !purchaseAmount || selectedCategoryIndex === null || !isValidExpression(purchaseAmount);
+
+  const handleKeyboardInput = (key: string) => {
+    if (key === "⌫") {
+      setPurchaseAmount((prev) => prev.slice(0, -1));
+    } else if (key === "Ввод") {
+      setShowNumericKeyboard(false);
+    } else {
+      setPurchaseAmount((prev) => prev + key);
+    }
+  };
+
+  const handleAlphaKeyboardInput = (key: string) => {
+    if (key === "⌫") {
+      setPurchaseName((prev) => prev.slice(0, -1));
+    } else if (key === "Space") {
+      setPurchaseName((prev) => prev + " ");
+    } else if (key === "Ввод") {
+      setShowAlphaKeyboard(false);
+    } else {
+      setPurchaseName((prev) => prev + key);
+    }
+  };
 
   const handleAddPurchase = () => {
     if (isButtonDisabled) return;
@@ -106,10 +99,15 @@ const handleKeyboardInput = (key: string) => {
       category: categories[selectedCategoryIndex].name,
     });
 
+    resetInputs();
+  };
+
+  const resetInputs = () => {
     setPurchaseName("");
     setPurchaseAmount("");
     setSelectedCategoryIndex(null);
-    setShowKeyboard(false);  
+    setShowNumericKeyboard(false);
+    setShowAlphaKeyboard(false);
   };
 
   const handleLongPress = (cat: Category) => {
@@ -141,9 +139,29 @@ const handleKeyboardInput = (key: string) => {
         height: "100vh",
         width: "100%",
         background: "#fff",
-        overflow: "hidden", // убираем общий скролл
+        overflow: "hidden",
+        position: "relative",
       }}
     >
+      {/* Overlay для скрытия панелей и клавиатур */}
+      {(showNumericKeyboard || showAlphaKeyboard || selectedCategoryIndex !== null) && (
+        <div
+          onClick={() => {
+            console.log("Overlay click");
+            resetInputs();
+          }}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 90,
+            backgroundColor: "transparent",
+          }}
+        />
+      )}
+
       {/* Верхняя панель */}
       <div
         style={{
@@ -166,6 +184,7 @@ const handleKeyboardInput = (key: string) => {
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
           style={{ fontSize: 16, padding: "6px 8px", width: 150 }}
+          onClick={(e) => e.stopPropagation()}
         >
           {months.map((month, idx) => (
             <option key={idx} value={month}>
@@ -178,186 +197,188 @@ const handleKeyboardInput = (key: string) => {
         </div>
       </div>
 
-{/* Контейнер категорий */}
-<div
-  style={{
-    flex: 1,
-    paddingTop: "110px",
-    paddingBottom: selectedCategoryIndex !== null ? "180px" : "20px",
-    overflowY: "auto",
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 16,
-    justifyItems: "center",
-    alignContent: "start",
-    WebkitOverflowScrolling: "touch",
-  }}
-  onClick={() => {
-    setSelectedCategoryIndex(null);
-    setShowKeyboard(false); // скрываем клавиатуру
-  }}
->
-  {categories.map((cat, i) => {
-    const Icon = iconMap[cat.icon];
-    const isSelected = i === selectedCategoryIndex;
-
-    const sumByCategory = purchases
-      .filter((p) => p.category === cat.name)
-      .filter((p) => isInSelectedMonth(p.date, selectedMonth))
-      .reduce((sum, p) => sum + p.amount, 0);
-
-    return (
+      {/* Сетка категорий */}
       <div
-        key={i}
-        onClick={(e) => {
-          e.stopPropagation(); // чтобы клик на категории не сбрасывал выбор
-          setSelectedCategoryIndex(i);
-        }}
-        onTouchStart={(e) => {
-          const timeout = setTimeout(() => handleLongPress(cat), 500);
-          e.currentTarget.ontouchend = () => clearTimeout(timeout);
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          handleLongPress(cat);
-        }}
         style={{
-          textAlign: "center",
-          cursor: "pointer",
-          userSelect: "none",
+          flex: 1,
+          paddingTop: "110px",
+          paddingBottom: selectedCategoryIndex !== null ? "180px" : "20px",
+          overflowY: "auto",
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 16,
+          justifyItems: "center",
+          alignContent: "start",
+          WebkitOverflowScrolling: "touch",
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-          {cat.name}
-        </div>
+        {categories.map((cat, i) => {
+          const Icon = iconMap[cat.icon];
+          const isSelected = i === selectedCategoryIndex;
+
+          const sumByCategory = purchases
+            .filter((p) => p.category === cat.name)
+            .filter((p) => isInSelectedMonth(p.date, selectedMonth))
+            .reduce((sum, p) => sum + p.amount, 0);
+
+          return (
+            <div
+              key={i}
+              onClick={() => setSelectedCategoryIndex(i)}
+              onTouchStart={(e) => {
+                const timeout = setTimeout(() => handleLongPress(cat), 500);
+                e.currentTarget.ontouchend = () => clearTimeout(timeout);
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleLongPress(cat);
+              }}
+              style={{
+                textAlign: "center",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                {cat.name}
+              </div>
+              <div
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                  background: isSelected ? "#e0f0ff" : "#f9f9f9",
+                  border: isSelected ? "1px solid #007bff" : "1px solid #ccc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 6px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s ease",
+                  transform: isSelected ? "scale(1.05)" : "scale(1)",
+                }}
+              >
+                {Icon && <Icon size={28} />}
+              </div>
+              <div style={{ fontSize: 13, color: "#333" }}>
+                {sumByCategory} RSD
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Кнопка добавления */}
         <div
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: "50%",
-            background: isSelected ? "#e0f0ff" : "#f9f9f9",
-            border: isSelected ? "1px solid #007bff" : "1px solid #ccc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 6px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            transition: "all 0.2s ease",
-            transform: isSelected ? "scale(1.05)" : "scale(1)",
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowAddModal(true);
           }}
+          style={{ textAlign: "center", cursor: "pointer", userSelect: "none" }}
         >
-          {Icon && <Icon size={28} />}
-        </div>
-        <div style={{ fontSize: 13, color: "#333" }}>
-          {sumByCategory} RSD
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+            Добавить
+          </div>
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: "50%",
+              background: "#f9f9f9",
+              border: "1px solid #ccc",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 6px",
+            }}
+          >
+            <PlusIcon size={28} />
+          </div>
         </div>
       </div>
-    );
-  })}
-
-  {/* Кнопка добавления категории */}
-  <div
-    onClick={(e) => {
-      e.stopPropagation();
-      setShowAddModal(true);
-    }}
-    style={{
-      textAlign: "center",
-      cursor: "pointer",
-      userSelect: "none",
-    }}
-  >
-    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-      Добавить
-    </div>
-    <div
-      style={{
-        width: 60,
-        height: 60,
-        borderRadius: "50%",
-        background: "#f9f9f9",
-        border: "1px solid #ccc",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        margin: "0 auto 6px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-      }}
-    >
-      <PlusIcon size={28} />
-    </div>
-  </div>
-</div>
-
 
       {/* Нижняя панель */}
-{selectedCategoryIndex !== null && (
-  <div
-    style={{
-      position: "fixed",
-      bottom: showKeyboard ? 20 + KEYBOARD_HEIGHT : 60,
-      left: 0,
-      right: 0,
-      backgroundColor: "white",
-      padding: "10px 20px calc(env(safe-area-inset-bottom) + 10px)",
-      // boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-      zIndex: 100,
-      alignItems: "center",
-    }}
-  >
-    <input
-      type="text"
-      placeholder="Название покупки"
-      value={purchaseName}
-      onChange={(e) => setPurchaseName(e.target.value)}
-      style={{
-        width: "300px",
-        padding: 8,
-        fontSize: 16,
-        border: "1px solid #666",
-        borderRadius: 6,
-      }}
-    />
-    <input
-      type="text"
-      placeholder="Сумма"
-      value={purchaseAmount}
-      readOnly
-      onFocus={() => setShowKeyboard(true)}
-      style={{
-        width: "300px",
-        padding: 8,
-        fontSize: 16,
-        border: "1px solid #666",
-        borderRadius: 6,
-  }}
-/>
-    <button
-      onClick={handleAddPurchase}
-      disabled={isButtonDisabled}
-      style={{
-        width: "150px",
-        padding: "10px 16px",
-        background: "#007bff",
-        color: "white",
-        fontSize: 16,
-        border: "none",
-        borderRadius: 12,
-        cursor: isButtonDisabled ? "default" : "pointer",
-        opacity: isButtonDisabled ? 0.5 : 1,
-      }}
-    >
-      Добавить
-    </button>
-  </div>
-)}
+      {selectedCategoryIndex !== null && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: (showAlphaKeyboard || showNumericKeyboard) ? KEYBOARD_HEIGHT + 20 : 60,
+            left: 0,
+            right: 0,
+            backgroundColor: "white",
+            padding: "10px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            zIndex: 100,
+            alignItems: "center",
+            transition: "bottom 0.3s ease",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Название покупки"
+            value={purchaseName}
+            readOnly
+            onFocus={() => {
+              setShowAlphaKeyboard(true);
+              setShowNumericKeyboard(false);
+            }}
+            style={{
+              width: "300px",
+              padding: 8,
+              fontSize: 16,
+              border: "1px solid #666",
+              borderRadius: 6,
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Сумма"
+            value={purchaseAmount}
+            readOnly
+            onFocus={() => {
+              setShowNumericKeyboard(true);
+              setShowAlphaKeyboard(false);
+            }}
+            style={{
+              width: "300px",
+              padding: 8,
+              fontSize: 16,
+              border: "1px solid #666",
+              borderRadius: 6,
+            }}
+          />
+          <button
+            onClick={handleAddPurchase}
+            disabled={isButtonDisabled}
+            style={{
+              width: "150px",
+              padding: "10px 16px",
+              background: "#007bff",
+              color: "white",
+              fontSize: 16,
+              border: "none",
+              borderRadius: 12,
+              cursor: isButtonDisabled ? "default" : "pointer",
+              opacity: isButtonDisabled ? 0.5 : 1,
+            }}
+          >
+            Добавить
+          </button>
+        </div>
+      )}
 
-{showKeyboard && (
-  <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
-)}
+      {/* Кастомные клавиатуры */}
+      {showNumericKeyboard && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+          <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
+        </div>
+      )}
+      {showAlphaKeyboard && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+          <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
+        </div>
+      )}
 
       {/* Модалки */}
       {showAddModal && (
