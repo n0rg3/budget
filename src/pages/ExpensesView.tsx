@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Purchase } from "../types";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
 
@@ -22,6 +22,26 @@ function formatDateTime(dateStr: string): string {
   return `${day}, ${time}`;
 }
 
+// SVG стрелка вниз (иконка)
+const ArrowIcon = ({ rotated }: { rotated: boolean }) => (
+  <svg
+    style={{
+      width: 16,
+      height: 16,
+      transition: "transform 0.3s ease",
+      transform: rotated ? "rotate(180deg)" : "rotate(0deg)",
+    }}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 function ExpensesView({ purchases }: ExpensesViewProps) {
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
@@ -31,6 +51,34 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
 
   const total = filteredPurchases.reduce((sum, p) => sum + p.amount, 0);
 
+  const purchasesByCategory: Record<string, Purchase[]> = {};
+  filteredPurchases.forEach((p) => {
+    if (!purchasesByCategory[p.category]) purchasesByCategory[p.category] = [];
+    purchasesByCategory[p.category].push(p);
+  });
+
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
+
+const toggleAll = () => {
+  setAllExpanded((prev) => !prev);
+};
+
+
+  // Стили для анимации раскрытия
+  const collapsibleStyle = (expanded: boolean) => ({
+    maxHeight: expanded ? 1000 : 0, // достаточно большой maxHeight
+    overflow: "hidden",
+    transition: "max-height 0.4s ease",
+  });
+
   return (
     <div
       style={{
@@ -39,7 +87,7 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
         height: "100vh",
         width: "100%",
         background: "#fff",
-        overflow: "hidden", // убираем общий скролл
+        overflow: "hidden",
       }}
     >
       {/* Верхняя панель */}
@@ -76,7 +124,7 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
         </div>
       </div>
 
-      {/* Прокручиваемый список покупок */}
+      {/* Список */}
       <div
         style={{
           flex: 1,
@@ -93,59 +141,149 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
           </p>
         )}
 
-        <ul
+        {/* "Все покупки" */}
+        <div
+          onClick={toggleAll}
           style={{
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            width: "100%",
-            boxSizing: "border-box",
+            cursor: "pointer",
+            padding: "12px 16px",
+            borderBottom: "1px solid #ddd",
+            fontWeight: "700",
+            fontSize: 16,
+            userSelect: "none",
+            backgroundColor: "#f0f0f0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+          aria-expanded={allExpanded}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") toggleAll();
           }}
         >
-          {filteredPurchases.map((purchase) => (
-            <li
-              key={purchase.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "12px 16px",
-                borderBottom: "1px solid #eee",
-                alignItems: "center",
-                fontSize: 14,
-              }}
-            >
-              {/* Левая часть */}
-              <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                <div style={{ fontWeight: 600 }}>{purchase.category}</div>
-                <div
-                  style={{
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    color: "#333",
-                  }}
-                >
-                  {purchase.name}
-                </div>
-              </div>
-
-              {/* Правая часть */}
-              <div
+          <span>Все покупки</span>
+          <ArrowIcon rotated={allExpanded} />
+        </div>
+        <div style={collapsibleStyle(allExpanded)}>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {filteredPurchases.map((purchase) => (
+              <li
+                key={purchase.id}
                 style={{
-                  textAlign: "right",
-                  minWidth: 120,
-                  marginLeft: 16,
-                  whiteSpace: "nowrap",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "8px 16px",
+                  borderBottom: "1px solid #eee",
+                  alignItems: "center",
+                  fontSize: 14,
                 }}
               >
-                <div style={{ fontWeight: 600 }}>{purchase.amount.toFixed(0)} RSD</div>
-                <div style={{ fontSize: 12, color: "#666" }}>
-                  {formatDateTime(purchase.date)}
+                <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                  <div style={{ fontWeight: 600 }}>{purchase.category}</div>
+                  <div
+                    style={{
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      color: "#333",
+                    }}
+                  >
+                    {purchase.name}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div
+                  style={{
+                    textAlign: "right",
+                    minWidth: 120,
+                    marginLeft: 16,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{purchase.amount.toFixed(0)} RSD</div>
+                  <div style={{ fontSize: 12, color: "#666" }}>
+                    {formatDateTime(purchase.date)}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Категории */}
+        {Object.entries(purchasesByCategory).map(([category, purchases]) => (
+          <div key={category} style={{ marginTop: 8 }}>
+            <div
+              onClick={() => toggleCategory(category)}
+              style={{
+                cursor: "pointer",
+                padding: "12px 16px",
+                borderBottom: "1px solid #ddd",
+                fontWeight: "600",
+                fontSize: 14,
+                userSelect: "none",
+                backgroundColor: "#fafafa",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+              aria-expanded={expandedCategories[category] || false}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") toggleCategory(category);
+              }}
+            >
+              <span>{category}</span>
+              <ArrowIcon rotated={!!expandedCategories[category]} />
+            </div>
+            <div style={collapsibleStyle(!!expandedCategories[category])}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {purchases.map((purchase) => (
+                  <li
+                    key={purchase.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "8px 16px",
+                      borderBottom: "1px solid #eee",
+                      alignItems: "center",
+                      fontSize: 14,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                      <div style={{ fontWeight: 600 }}>{purchase.category}</div>
+                      <div
+                        style={{
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          color: "#333",
+                        }}
+                      >
+                        {purchase.name}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        textAlign: "right",
+                        minWidth: 120,
+                        marginLeft: 16,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>{purchase.amount.toFixed(0)} RSD</div>
+                      <div style={{ fontSize: 12, color: "#666" }}>
+                        {formatDateTime(purchase.date)}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
