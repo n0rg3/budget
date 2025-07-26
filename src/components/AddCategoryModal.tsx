@@ -1,100 +1,227 @@
 import React, { useState } from "react";
-import Select from "react-select";
-import { iconOptions } from "../constants/iconOptions";
+import { iconMap } from "../constants/iconOptions";
+import CustomAlphaKeyboard from "./CustomAlphaKeyboard";
 
 interface AddCategoryModalProps {
   onClose: () => void;
   onAdd: (name: string, icon: string) => void;
 }
 
-export default function AddCategoryModal({ onClose, onAdd }: AddCategoryModalProps) {
+const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) => {
   const [name, setName] = useState("");
-  const [iconName, setIconName] = useState<string>("Circle");
+  const [selectedIcon, setSelectedIcon] = useState<string>("shopping"); // дефолтная иконка
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleSubmit = () => {
-    if (!name.trim()) return;
-    onAdd(name.trim(), iconName);
-    setName("");
-    setIconName("Circle");
-    onClose();
+  const [showAlphaKeyboard, setShowAlphaKeyboard] = useState(false);
+
+  const handleAlphaKeyboardInput = (key: string) => {
+    if (key === "⌫") {
+      setName((prev) => prev.slice(0, -1));
+    } else if (key === "Space") {
+      setName((prev) => prev + " ");
+    } else if (key === "Ввод") {
+      setShowAlphaKeyboard(false);
+    } else {
+      setName((prev) => prev + key);
+    }
+  };
+
+  const handleAdd = () => {
+    if (!name || !selectedIcon) return;
+    onAdd(name, selectedIcon);
+  };
+
+  const handleOverlayClick = () => {
+    setShowAlphaKeyboard(false);
+    setShowDropdown(false);
   };
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 style={styles.header}>Новая категория</h3>
-
-        <label style={styles.label}>Название</label>
-        <input
-          style={styles.input}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Пример: Еда"
-        />
-
-        <label style={styles.label}>Иконка</label>
-        <Select
-          options={iconOptions}
-          value={iconOptions.find((opt) => opt.name === iconName)}
-          onChange={(selected) => selected && setIconName(selected.name)}
-          formatOptionLabel={(option) => (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <option.icon size={18} />
-              {option.label}
-            </div>
-          )}
-          styles={{
-            option: (base) => ({ ...base, display: "flex", alignItems: "center", gap: 8 }),
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 200,
+      }}
+    >
+      {/* Overlay */}
+      {(showAlphaKeyboard || showDropdown) && (
+        <div
+          onClick={handleOverlayClick}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 90,
+            backgroundColor: "transparent",
           }}
         />
+      )}
 
-        <div style={styles.buttons}>
-          <button onClick={handleSubmit}>Добавить</button>
-          <button onClick={onClose}>Отмена</button>
+      {/* Модальное окно */}
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: 20,
+          borderRadius: 12,
+          width: 350,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+          position: "relative",
+          zIndex: 100,
+        }}
+      >
+        <h3 style={{ margin: 0 }}>Добавить категорию</h3>
+
+        {/* Название и иконка в одной строке */}
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {/* Поле для имени категории */}
+          <input
+            type="text"
+            placeholder="Название категории"
+            value={name}
+            readOnly
+            onFocus={() => setShowAlphaKeyboard(true)}
+            style={{
+              flexGrow: 1,
+              padding: 10,
+              fontSize: 16,
+              border: "1px solid #ccc",
+              borderRadius: 6,
+            }}
+          />
+
+          {/* Кастомный dropdown только с иконками */}
+          <div style={{ position: "relative", width: 60 }}>
+            <div
+              onClick={() => setShowDropdown((prev) => !prev)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: 44,
+                border: "1px solid #ccc",
+                borderRadius: 6,
+                cursor: "pointer",
+                backgroundColor: "#f9f9f9",
+                userSelect: "none",
+              }}
+            >
+              {iconMap[selectedIcon] && React.createElement(iconMap[selectedIcon], { size: 28 })}
+            </div>
+
+            {showDropdown && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  left: "auto",
+                  backgroundColor: "#fff",
+                  border: "1px solid #ccc",
+                  borderRadius: 6,
+                  padding: 10,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 1fr)",
+                  gap: 12,
+                  zIndex: 200,
+                  maxHeight: 200,
+                  overflowY: "auto",
+                  transformOrigin: "top right",
+                }}
+              >
+                {Object.keys(iconMap).map((iconKey) => (
+                  <div
+                    key={iconKey}
+                    onClick={() => {
+                      setSelectedIcon(iconKey);
+                      setShowDropdown(false);
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 8,
+                      border:
+                        iconKey === selectedIcon
+                          ? "2px solid #007bff"
+                          : "1px solid #ccc",
+                      backgroundColor: "#f9f9f9",
+                      cursor: "pointer",
+                      userSelect: "none",
+                    }}
+                  >
+                    {iconMap[iconKey] && React.createElement(iconMap[iconKey], { size: 20 })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Кнопка добавления */}
+        <button
+          onClick={handleAdd}
+          style={{
+            width: "100%",
+            padding: "12px 0",
+            background: "#007bff",
+            color: "white",
+            fontSize: 16,
+            border: "none",
+            borderRadius: 8,
+            cursor: name && selectedIcon ? "pointer" : "not-allowed",
+            opacity: name && selectedIcon ? 1 : 0.5,
+          }}
+        >
+          Добавить
+        </button>
+
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 8,
+            padding: "10px 0",
+            background: "#f1f1f1",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          Отмена
+        </button>
+      </div>
+
+      {/* Клавиатура */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 150,
+          transition: "transform 0.3s ease, opacity 0.3s ease",
+          transform: showAlphaKeyboard ? "translateY(0)" : "translateY(100%)",
+          opacity: showAlphaKeyboard ? 1 : 0,
+        }}
+      >
+        <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
       </div>
     </div>
   );
-}
-
-const styles = {
-  overlay: {
-    position: "fixed" as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: "rgba(0,0,0,0.3)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999,
-  },
-  modal: {
-    background: "white",
-    padding: 20,
-    borderRadius: 12,
-    maxWidth: 300,
-    width: "90%",
-  },
-  header: {
-    fontSize: 18,
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 14,
-    marginTop: 8,
-  },
-  input: {
-    width: "100%",
-    padding: 6,
-    marginTop: 4,
-    marginBottom: 12,
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 8,
-    marginTop: 12,
-  },
 };
+
+export default AddCategoryModal;
