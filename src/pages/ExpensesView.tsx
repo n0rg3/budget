@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import type { Purchase } from "../types";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
+import EditPurchaseModal from "../components/EditPurchaseModal";
 
 interface ExpensesViewProps {
   purchases: Purchase[];
+  onUpdatePurchase: (updated: Purchase) => void;
+  onDeletePurchase: (id: number) => void;
+  categories: string[];
 }
 
 function isInSelectedMonth(dateStr: string, selectedMonth: string) {
@@ -22,7 +26,6 @@ function formatDateTime(dateStr: string): string {
   return `${day}, ${time}`;
 }
 
-// SVG стрелка вниз (иконка)
 const ArrowIcon = ({ rotated }: { rotated: boolean }) => (
   <svg
     style={{
@@ -42,7 +45,7 @@ const ArrowIcon = ({ rotated }: { rotated: boolean }) => (
   </svg>
 );
 
-function ExpensesView({ purchases }: ExpensesViewProps) {
+function ExpensesView({ purchases, onUpdatePurchase, onDeletePurchase, categories }: ExpensesViewProps) {
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
 
   const filteredPurchases = purchases.filter((p) =>
@@ -60,6 +63,8 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [allExpanded, setAllExpanded] = useState(false);
 
+  const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
+
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -67,17 +72,35 @@ function ExpensesView({ purchases }: ExpensesViewProps) {
     }));
   };
 
-const toggleAll = () => {
-  setAllExpanded((prev) => !prev);
-};
+  const toggleAll = () => {
+    setAllExpanded((prev) => !prev);
+  };
 
-
-  // Стили для анимации раскрытия
   const collapsibleStyle = (expanded: boolean) => ({
-    maxHeight: expanded ? 1000 : 0, // достаточно большой maxHeight
+    maxHeight: expanded ? 1000 : 0,
     overflow: "hidden",
     transition: "max-height 0.4s ease",
   });
+
+  const openEditModal = (purchase: Purchase) => {
+    setEditingPurchase(purchase);
+  };
+
+  const closeModal = () => {
+    setEditingPurchase(null);
+  };
+
+  const handleSave = (updated: Purchase) => {
+    onUpdatePurchase(updated);
+    closeModal();
+  };
+
+  const handleDelete = () => {
+    if (editingPurchase) {
+      onDeletePurchase(editingPurchase.id);
+      closeModal();
+    }
+  };
 
   return (
     <div
@@ -141,7 +164,7 @@ const toggleAll = () => {
           </p>
         )}
 
-        {/* "Все покупки" */}
+        {/* Все покупки */}
         <div
           onClick={toggleAll}
           style={{
@@ -178,6 +201,10 @@ const toggleAll = () => {
                   borderBottom: "1px solid #eee",
                   alignItems: "center",
                   fontSize: 14,
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  openEditModal(purchase);
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
@@ -251,6 +278,10 @@ const toggleAll = () => {
                       alignItems: "center",
                       fontSize: 14,
                     }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      openEditModal(purchase);
+                    }}
                   >
                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <div style={{ fontWeight: 600 }}>{purchase.category}</div>
@@ -285,6 +316,16 @@ const toggleAll = () => {
           </div>
         ))}
       </div>
+
+      {editingPurchase && (
+        <EditPurchaseModal
+          purchase={editingPurchase}
+          categories={categories}
+          onClose={closeModal}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }

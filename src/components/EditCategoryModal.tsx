@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { iconMap } from "../constants/iconOptions";
 import CustomAlphaKeyboard from "./CustomAlphaKeyboard";
 import type { Category, Purchase } from "../types";
@@ -23,7 +23,26 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAlphaKeyboard, setShowAlphaKeyboard] = useState(false);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  const keyboardRef = useRef<HTMLDivElement>(null);
+
   const categoryPurchases = purchases.filter((p) => p.category === category.name);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(target) &&
+        keyboardRef.current &&
+        !keyboardRef.current.contains(target)
+      ) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleAlphaKeyboardInput = (key: string) => {
     if (key === "⌫") {
@@ -42,11 +61,6 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     onSave({ name, icon: selectedIcon });
   };
 
-  const handleOverlayClick = () => {
-    setShowAlphaKeyboard(false);
-    setShowDropdown(false);
-  };
-
   return (
     <div
       style={{
@@ -62,24 +76,10 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         zIndex: 200,
       }}
     >
-      {/* Overlay */}
-      {(showAlphaKeyboard || showDropdown) && (
-        <div
-          onClick={handleOverlayClick}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 90,
-            backgroundColor: "transparent",
-          }}
-        />
-      )}
-
       {/* Модальное окно */}
       <div
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()} // Чтобы клики внутри не закрывали модалку
         style={{
           backgroundColor: "white",
           padding: 20,
@@ -89,16 +89,14 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
           flexDirection: "column",
           gap: 16,
           position: "relative",
-          zIndex: 100,
           maxHeight: "80vh",
           overflowY: "auto",
+          zIndex: 201,
         }}
       >
         <h3 style={{ margin: 0 }}>Редактировать категорию</h3>
 
-        {/* Контейнер с названием и иконкой в одной строке */}
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          {/* Название категории */}
           <input
             type="text"
             placeholder="Название категории"
@@ -111,10 +109,10 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
               fontSize: 16,
               border: "1px solid #ccc",
               borderRadius: 6,
+              cursor: "text",
             }}
           />
 
-          {/* Кастомный dropdown только с иконками */}
           <div style={{ position: "relative", width: 60 }}>
             <div
               onClick={() => setShowDropdown((prev) => !prev)}
@@ -148,11 +146,12 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
                   gap: 12,
-                  zIndex: 200,
+                  zIndex: 202,
                   maxHeight: 200,
                   overflowY: "auto",
                   transformOrigin: "top right",
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
                 {Object.keys(iconMap).map((iconKey) => (
                   <div
@@ -185,29 +184,6 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
           </div>
         </div>
 
-        {/* Список покупок в категории */}
-        <div style={{ fontWeight: "bold", fontSize: 14, marginTop: 12 }}>
-          Покупки в этой категории:
-        </div>
-        <ul
-          style={{
-            fontSize: 13,
-            maxHeight: 100,
-            overflowY: "auto",
-            marginTop: 4,
-            marginBottom: 8,
-            paddingLeft: 20,
-          }}
-        >
-          {categoryPurchases.length === 0 && <li>Покупок нет</li>}
-          {categoryPurchases.map((p) => (
-            <li key={p.id}>
-              {p.name} — {p.amount.toFixed(0)} RSD
-            </li>
-          ))}
-        </ul>
-
-        {/* Кнопки */}
         <button
           onClick={handleSave}
           style={{
@@ -258,17 +234,20 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         </button>
       </div>
 
-      {/* Клавиатура */}
+      {/* Клавиатура с анимацией */}
       <div
+        ref={keyboardRef}
+        onClick={(e) => e.stopPropagation()}
         style={{
           position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 150,
+          zIndex: 300,
           transition: "transform 0.3s ease, opacity 0.3s ease",
           transform: showAlphaKeyboard ? "translateY(0)" : "translateY(100%)",
           opacity: showAlphaKeyboard ? 1 : 0,
+          backgroundColor: "#ddd",
         }}
       >
         <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />

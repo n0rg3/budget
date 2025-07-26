@@ -1,18 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface CustomAlphaKeyboardProps {
   onKeyPress: (key: string) => void;
 }
 
-// Можно сделать алфавит по строкам
-const rows = [
-  "йцукенгшщзхъ",
-  "фывапролджэ",
-  "ячсмитьбю",
-  "Space", "⌫", "Ввод"
-];
+// Русская и английская раскладки по строкам
+const layouts = {
+  ru: [
+    "йцукенгшщзхъ",
+    "фывапролджэ",
+    "ячсмитьбю",
+  ],
+  en: [
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm",
+  ],
+};
+
+const controlKeys = ["Space", "⌫", "Ввод"];
 
 const CustomAlphaKeyboard: React.FC<CustomAlphaKeyboardProps> = ({ onKeyPress }) => {
+  const [layout, setLayout] = useState<"ru" | "en">("ru");
+
+  const toggleLayout = () => {
+    setLayout((prev) => (prev === "ru" ? "en" : "ru"));
+  };
+
   return (
     <div
       style={{
@@ -24,7 +38,7 @@ const CustomAlphaKeyboard: React.FC<CustomAlphaKeyboardProps> = ({ onKeyPress })
         gap: 6,
       }}
     >
-      {rows.slice(0, 3).map((row, i) => (
+      {layouts[layout].map((row, i) => (
         <div key={i} style={{ display: "flex", gap: 6, justifyContent: "center" }}>
           {row.split("").map((char) => (
             <button
@@ -42,6 +56,7 @@ const CustomAlphaKeyboard: React.FC<CustomAlphaKeyboardProps> = ({ onKeyPress })
                 backgroundColor: "#fff",
                 cursor: "pointer",
                 userSelect: "none",
+                textTransform: layout === "en" ? "lowercase" : "none",
               }}
             >
               {char}
@@ -49,14 +64,16 @@ const CustomAlphaKeyboard: React.FC<CustomAlphaKeyboardProps> = ({ onKeyPress })
           ))}
         </div>
       ))}
+
       {/* Последняя строка с кнопками */}
       <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-        {rows[3].split(" ").map((key) => (
+        {controlKeys.map((key) => (
           <button
             key={key}
             onClick={(e) => {
               e.stopPropagation();
-              onKeyPress(key);
+              if (key === "Space") onKeyPress(" ");
+              else onKeyPress(key);
             }}
             style={{
               flex: key === "Space" ? 3 : 1,
@@ -73,6 +90,27 @@ const CustomAlphaKeyboard: React.FC<CustomAlphaKeyboardProps> = ({ onKeyPress })
             {key === "Space" ? "Пробел" : key}
           </button>
         ))}
+
+        {/* Кнопка переключения раскладки */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleLayout();
+          }}
+          style={{
+            flex: 1,
+            padding: "8px 0",
+            fontSize: 16,
+            borderRadius: 6,
+            border: "1px solid #aaa",
+            backgroundColor: "#4caf50",
+            color: "white",
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          {layout === "ru" ? "EN" : "RU"}
+        </button>
       </div>
     </div>
   );

@@ -28,6 +28,16 @@ export default function App() {
     ]);
   };
 
+  const updatePurchase = (updated: Purchase) => {
+    setPurchases((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p))
+    );
+  };
+
+  const deletePurchase = (id: number) => {
+    setPurchases((prev) => prev.filter((p) => p.id !== id));
+  };
+
   return (
     <SelectedMonthProvider>
       <div className="app-container">
@@ -45,7 +55,17 @@ export default function App() {
             }
           />
           <Route path="/chart" element={<PieChartView purchases={purchases} />} />
-          <Route path="/expenses" element={<ExpensesView purchases={purchases} />} />
+          <Route
+            path="/expenses"
+            element={
+              <ExpensesView
+                purchases={purchases}
+                onUpdatePurchase={updatePurchase}
+                onDeletePurchase={deletePurchase}
+                categories={categories.map((c) => c.name)}
+              />
+            }
+          />
         </Routes>
 
         <nav className="bottom-nav">

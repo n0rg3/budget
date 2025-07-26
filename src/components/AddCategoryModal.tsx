@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { iconMap } from "../constants/iconOptions";
 import CustomAlphaKeyboard from "./CustomAlphaKeyboard";
 
@@ -11,8 +11,26 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
   const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState<string>("shopping"); // дефолтная иконка
   const [showDropdown, setShowDropdown] = useState(false);
-
   const [showAlphaKeyboard, setShowAlphaKeyboard] = useState(false);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  const keyboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(target) &&
+        keyboardRef.current &&
+        !keyboardRef.current.contains(target)
+      ) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleAlphaKeyboardInput = (key: string) => {
     if (key === "⌫") {
@@ -31,11 +49,6 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
     onAdd(name, selectedIcon);
   };
 
-  const handleOverlayClick = () => {
-    setShowAlphaKeyboard(false);
-    setShowDropdown(false);
-  };
-
   return (
     <div
       style={{
@@ -51,24 +64,10 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
         zIndex: 200,
       }}
     >
-      {/* Overlay */}
-      {(showAlphaKeyboard || showDropdown) && (
-        <div
-          onClick={handleOverlayClick}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 90,
-            backgroundColor: "transparent",
-          }}
-        />
-      )}
-
       {/* Модальное окно */}
       <div
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()} // чтобы клики внутри модалки не закрывали ее
         style={{
           backgroundColor: "white",
           padding: 20,
@@ -78,7 +77,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
           flexDirection: "column",
           gap: 16,
           position: "relative",
-          zIndex: 100,
+          zIndex: 201,
         }}
       >
         <h3 style={{ margin: 0 }}>Добавить категорию</h3>
@@ -98,6 +97,9 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
               fontSize: 16,
               border: "1px solid #ccc",
               borderRadius: 6,
+              cursor: "text",
+              backgroundColor: "#f7f7f7",
+              userSelect: "none",
             }}
           />
 
@@ -135,11 +137,12 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
                   display: "grid",
                   gridTemplateColumns: "repeat(5, 1fr)",
                   gap: 12,
-                  zIndex: 200,
+                  zIndex: 202,
                   maxHeight: 200,
                   overflowY: "auto",
                   transformOrigin: "top right",
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
                 {Object.keys(iconMap).map((iconKey) => (
                   <div
@@ -205,8 +208,10 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
         </button>
       </div>
 
-      {/* Клавиатура */}
+      {/* Клавиатура с анимацией */}
       <div
+        ref={keyboardRef}
+        onClick={(e) => e.stopPropagation()}
         style={{
           position: "fixed",
           bottom: 0,
@@ -216,6 +221,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onAdd }) =
           transition: "transform 0.3s ease, opacity 0.3s ease",
           transform: showAlphaKeyboard ? "translateY(0)" : "translateY(100%)",
           opacity: showAlphaKeyboard ? 1 : 0,
+          backgroundColor: "#ddd",
         }}
       >
         <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
