@@ -67,6 +67,7 @@ useEffect(() => {
 }, []);
 
 const [showKeyboard, setShowKeyboard] = useState(false);
+const KEYBOARD_HEIGHT = 240; // подогнать по реальной высоте клавиатуры
 
 const handleKeyboardInput = (key: string) => {
   if (key === "⌫") {
@@ -108,6 +109,7 @@ const handleKeyboardInput = (key: string) => {
     setPurchaseName("");
     setPurchaseAmount("");
     setSelectedCategoryIndex(null);
+    setShowKeyboard(false);  
   };
 
   const handleLongPress = (cat: Category) => {
@@ -181,7 +183,7 @@ const handleKeyboardInput = (key: string) => {
   style={{
     flex: 1,
     paddingTop: "110px",
-    paddingBottom: selectedCategoryIndex !== null ? "180px" : "20px", // адаптивный отступ
+    paddingBottom: selectedCategoryIndex !== null ? "180px" : "20px",
     overflowY: "auto",
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
@@ -190,7 +192,10 @@ const handleKeyboardInput = (key: string) => {
     alignContent: "start",
     WebkitOverflowScrolling: "touch",
   }}
-  onClick={() => setSelectedCategoryIndex(null)} // сброс по клику
+  onClick={() => {
+    setSelectedCategoryIndex(null);
+    setShowKeyboard(false); // скрываем клавиатуру
+  }}
 >
   {categories.map((cat, i) => {
     const Icon = iconMap[cat.icon];
@@ -290,12 +295,12 @@ const handleKeyboardInput = (key: string) => {
   <div
     style={{
       position: "fixed",
-      bottom: 60,
+      bottom: showKeyboard ? 20 + KEYBOARD_HEIGHT : 60,
       left: 0,
       right: 0,
       backgroundColor: "white",
       padding: "10px 20px calc(env(safe-area-inset-bottom) + 10px)",
-      boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
+      // boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
       display: "flex",
       flexDirection: "column",
       gap: 8,

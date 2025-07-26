@@ -20,7 +20,7 @@ const CustomNumericKeyboard: React.FC<KeyboardProps> = ({ onKeyPress }) => {
         left: 0,
         right: 0,
         background: "#fff",
-        boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
+        // boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
         padding: "10px 10px",
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)",
