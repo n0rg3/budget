@@ -99,15 +99,19 @@ function CategoriesView({
       category: categories[selectedCategoryIndex].name,
     });
 
-    resetInputs();
-  };
-
-  const resetInputs = () => {
     setPurchaseName("");
     setPurchaseAmount("");
     setSelectedCategoryIndex(null);
     setShowNumericKeyboard(false);
     setShowAlphaKeyboard(false);
+  };
+
+  const handleOverlayClick = () => {
+    setShowNumericKeyboard(false);
+    setShowAlphaKeyboard(false);
+    setSelectedCategoryIndex(null);
+    setPurchaseName("");
+    setPurchaseAmount("");
   };
 
   const handleLongPress = (cat: Category) => {
@@ -143,13 +147,10 @@ function CategoriesView({
         position: "relative",
       }}
     >
-      {/* Overlay для скрытия панелей и клавиатур */}
-      {(showNumericKeyboard || showAlphaKeyboard || selectedCategoryIndex !== null) && (
+      {/* Overlay */}
+      {(showNumericKeyboard || showAlphaKeyboard) && (
         <div
-          onClick={() => {
-            console.log("Overlay click");
-            resetInputs();
-          }}
+          onClick={handleOverlayClick}
           style={{
             position: "fixed",
             top: 0,
@@ -184,7 +185,6 @@ function CategoriesView({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
           style={{ fontSize: 16, padding: "6px 8px", width: 150 }}
-          onClick={(e) => e.stopPropagation()}
         >
           {months.map((month, idx) => (
             <option key={idx} value={month}>
@@ -269,10 +269,7 @@ function CategoriesView({
 
         {/* Кнопка добавления */}
         <div
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowAddModal(true);
-          }}
+          onClick={() => setShowAddModal(true)}
           style={{ textAlign: "center", cursor: "pointer", userSelect: "none" }}
         >
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
@@ -369,16 +366,39 @@ function CategoriesView({
       )}
 
       {/* Кастомные клавиатуры */}
-      {showNumericKeyboard && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-          <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
-        </div>
-      )}
-      {showAlphaKeyboard && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-          <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
-        </div>
-      )}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transition: "transform 0.3s ease, opacity 0.3s ease",
+          transform: showNumericKeyboard
+            ? "translateY(0)"
+            : "translateY(100%)",
+          opacity: showNumericKeyboard ? 1 : 0,
+        }}
+      >
+        <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
+      </div>
+
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transition: "transform 0.3s ease, opacity 0.3s ease",
+          transform: showAlphaKeyboard
+            ? "translateY(0)"
+            : "translateY(100%)",
+          opacity: showAlphaKeyboard ? 1 : 0,
+        }}
+      >
+        <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
+      </div>
 
       {/* Модалки */}
       {showAddModal && (
