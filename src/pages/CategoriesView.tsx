@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddCategoryModal from "../components/AddCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
 import { useSelectedMonth } from "../context/SelectedMonthContext";
@@ -50,9 +50,22 @@ function CategoriesView({
 
   const [showNumericKeyboard, setShowNumericKeyboard] = useState(false);
   const [showAlphaKeyboard, setShowAlphaKeyboard] = useState(false);
+
+  // Управление видимостью клавиатуры для анимации
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
   const KEYBOARD_HEIGHT = 260;
 
   const { selectedMonth, setSelectedMonth, months } = useSelectedMonth();
+
+  useEffect(() => {
+    if (showNumericKeyboard || showAlphaKeyboard) {
+      setKeyboardVisible(true);
+    } else {
+      const timeout = setTimeout(() => setKeyboardVisible(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [showNumericKeyboard, showAlphaKeyboard]);
 
   const totalSum = purchases
     .filter((p) => isInSelectedMonth(p.date, selectedMonth))
@@ -74,7 +87,7 @@ function CategoriesView({
   const handleAlphaKeyboardInput = (key: string) => {
     if (key === "⌫") {
       setPurchaseName((prev) => prev.slice(0, -1));
-    } else if (key === "Space") {
+    } else if (key === " ") {
       setPurchaseName((prev) => prev + " ");
     } else if (key === "Ввод") {
       setShowAlphaKeyboard(false);
@@ -143,13 +156,10 @@ function CategoriesView({
         position: "relative",
       }}
     >
-      {/* Overlay для скрытия панелей и клавиатур */}
+      {/* Overlay */}
       {(showNumericKeyboard || showAlphaKeyboard || selectedCategoryIndex !== null) && (
         <div
-          onClick={() => {
-            console.log("Overlay click");
-            resetInputs();
-          }}
+          onClick={resetInputs}
           style={{
             position: "fixed",
             top: 0,
@@ -369,16 +379,16 @@ function CategoriesView({
       )}
 
       {/* Кастомные клавиатуры */}
-      {showNumericKeyboard && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-          <CustomNumericKeyboard onKeyPress={handleKeyboardInput} />
-        </div>
-      )}
-      {showAlphaKeyboard && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-          <CustomAlphaKeyboard onKeyPress={handleAlphaKeyboardInput} />
-        </div>
-      )}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 300 }}>
+        <CustomNumericKeyboard
+          visible={showNumericKeyboard && keyboardVisible}
+          onKeyPress={handleKeyboardInput}
+        />
+        <CustomAlphaKeyboard
+          visible={showAlphaKeyboard && keyboardVisible}
+          onKeyPress={handleAlphaKeyboardInput}
+        />
+      </div>
 
       {/* Модалки */}
       {showAddModal && (

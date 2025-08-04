@@ -2,6 +2,7 @@ import React from "react";
 
 interface CustomNumericKeyboardProps {
   onKeyPress: (key: string) => void;
+  visible?: boolean;
 }
 
 const keys = [
@@ -11,7 +12,7 @@ const keys = [
   "Ввод", "0", "⌫", "/",
 ];
 
-const CustomNumericKeyboard: React.FC<CustomNumericKeyboardProps> = ({ onKeyPress }) => {
+const CustomNumericKeyboard: React.FC<CustomNumericKeyboardProps> = ({ onKeyPress, visible = true }) => {
   return (
     <div
       style={{
@@ -21,6 +22,16 @@ const CustomNumericKeyboard: React.FC<CustomNumericKeyboardProps> = ({ onKeyPres
         padding: 10,
         backgroundColor: "#ddd",
         userSelect: "none",
+
+        // Анимация появления
+        transform: visible ? "translateY(0)" : "translateY(100%)",
+        opacity: visible ? 1 : 0,
+        transition: "transform 0.3s ease, opacity 0.3s ease",
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 300,
       }}
     >
       {keys.map((key) => (
